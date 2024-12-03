@@ -1,85 +1,8 @@
-function mpc = case39
-%CASE39 Power flow data for 39 bus New England system.
-%   Please see CASEFORMAT for details on the case file format.
-%
-%   Data taken from [1] with the following modifications/additions:
-%
-%       - renumbered gen buses consecutively (as in [2] and [4])
-%       - added Pmin = 0 for all gens
-%       - added Qmin, Qmax for gens at 31 & 39 (copied from gen at 35)
-%       - added Vg based on V in bus data (missing for bus 39)
-%       - added Vg, Pg, Pd, Qd at bus 39 from [2] (same in [4])
-%       - added Pmax at bus 39: Pmax = Pg + 100
-%       - added line flow limits and area data from [4]
-%       - added voltage limits, Vmax = 1.06, Vmin = 0.94
-%       - added identical quadratic generator costs
-%       - increased Pmax for gen at bus 34 from 308 to 508
-%         (assumed typo in [1], makes initial solved case feasible)
-%       - re-solved power flow
-% 
-%   Notes:
-%       - Bus 39, its generator and 2 connecting lines were added
-%         (by authors of [1]) to represent the interconnection with
-%         the rest of the eastern interconnect, and did not include
-%         Vg, Pg, Qg, Pd, Qd, Pmin, Pmax, Qmin or Qmax.
-%       - As the swing bus, bus 31 did not include and Q limits.
-%       - The voltages, etc in [1] appear to be quite close to the
-%         power flow solution of the case before adding bus 39 with
-%         it's generator and connecting branches, though the solution
-%         is not exact.
-%       - Explicit voltage setpoints for gen buses are not given, so
-%         they are taken from the bus data, however this results in two
-%         binding Q limits at buses 34 & 37, so the corresponding
-%         voltages have probably deviated from their original setpoints.
-%       - The generator locations and types are as follows:
-%           1   30      hydro
-%           2   31      nuke01
-%           3   32      nuke02
-%           4   33      fossil02
-%           5   34      fossil01
-%           6   35      nuke03
-%           7   36      fossil04
-%           8   37      nuke04
-%           9   38      nuke05
-%           10  39      interconnection to rest of US/Canada
-%
-%   This is a solved power flow case, but it includes the following
-%   violations:
-%       - Pmax violated at bus 31: Pg = 677.87, Pmax = 646
-%       - Qmin violated at bus 37: Qg = -1.37,  Qmin = 0
-%
-%   References:
-%   [1] G. W. Bills, et.al., "On-Line Stability Analysis Study"
-%       RP90-1 Report for the Edison Electric Institute, October 12, 1970,
-%       pp. 1-20 - 1-35.
-%       prepared by E. M. Gulachenski - New England Electric System
-%                   J. M. Undrill     - General Electric Co.
-%       "generally representative of the New England 345 KV system, but is
-%        not an exact or complete model of any past, present or projected
-%        configuration of the actual New England 345 KV system.
-%   [2] M. A. Pai, Energy Function Analysis for Power System Stability,
-%       Kluwer Academic Publishers, Boston, 1989.
-%       (references [3] as source of data)
-%   [3] Athay, T.; Podmore, R.; Virmani, S., "A Practical Method for the
-%       Direct Analysis of Transient Stability," IEEE Transactions on Power
-%       Apparatus and Systems , vol.PAS-98, no.2, pp.573-584, March 1979.
-%       URL: https://doi.org/10.1109/TPAS.1979.319407
-%       (references [1] as source of data)
-%   [4] Data included with TC Calculator at http://www.pserc.cornell.edu/tcc/
-%       for 39-bus system.
 
-%   MATPOWER
-
-%% MATPOWER Case Format : Version 2
-mpc.version = '2';
-
-%%-----  Power Flow Data  -----%%
-%% system MVA base
-mpc.baseMVA = 100;
 
 %% bus data
 %	bus_i	type	Pd	Qd	Gs	Bs	area	Vm	Va	baseKV	zone	Vmax	Vmin
-mpc.bus = [
+bus = [
 	1	1	97.6	44.2	0	0	2	1.0393836	-13.536602	345	1	1.06	0.94;
 	2	1	0	0	0	0	2	1.0484941	-9.7852666	345	1	1.06	0.94;
 	3	1	322	2.4	0	0	2	1.0307077	-12.276384	345	1	1.06	0.94;
@@ -123,7 +46,7 @@ mpc.bus = [
 
 %% generator data
 %	bus	Pg	Qg	Qmax	Qmin	Vg	mBase	status	Pmax	Pmin	Pc1	Pc2	Qc1min	Qc1max	Qc2min	Qc2max	ramp_agc	ramp_10	ramp_30	ramp_q	apf
-mpc.gen = [
+gen = [
 	30	250	161.762	400	140	1.0499	100	1	1040	0	0	0	0	0	0	0	0	0	0	0	0;
 	31	677.871	221.574	300	-100	0.982	100	1	646	0	0	0	0	0	0	0	0	0	0	0	0;
 	32	650	206.965	300	150	0.9841	100	1	725	0	0	0	0	0	0	0	0	0	0	0	0;
@@ -138,7 +61,7 @@ mpc.gen = [
 
 %% branch data
 %	fbus	tbus	r	x	b	rateA	rateB	rateC	ratio	angle	status	angmin	angmax
-mpc.branch = [
+branch = [
 	1	2	0.0035	0.0411	0.6987	600	600	600	0	0	1	-360	360;
 	1	39	0.001	0.025	0.75	1000	1000	1000	0	0	1	-360	360;
 	2	3	0.0013	0.0151	0.2572	500	500	500	0	0	1	-360	360;
@@ -187,19 +110,3 @@ mpc.branch = [
 	29	38	0.0008	0.0156	0	1200	1200	2500	1.025	0	1	-360	360;
 ];
 
-%%-----  OPF Data  -----%%
-%% generator cost data
-%	1	startup	shutdown	n	x1	y1	...	xn	yn
-%	2	startup	shutdown	n	c(n-1)	...	c0
-mpc.gencost = [
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-	2	0	0	3	0.01	0.3	0.2;
-];
